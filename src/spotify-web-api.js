@@ -816,6 +816,40 @@ SpotifyWebApi.prototype = {
   },
 
   /**
+   * Transfer playback to a new device and determine if it should start playing.
+   * @param {Array} device_ids A JSON array containing the ID of the device on which playback should be started/transferred.
+   * @param {boolean} play true to ensure playback happens on new device
+   * @returns {Promise|undefined} A promise that if successful, simply resolves to an empty object. If rejected,
+   * it contains an error object. Not returned if a callback is given.
+   */
+  transferPlayback: function(deviceIds, play, options, callback) {
+    options = options || { };
+
+    options.device_ids = deviceIds;
+    options.play = play;
+
+    var request = WebApiRequest.builder()
+      .withPath('/v1/me/player')
+      .withBodyParameters(options)
+      .withHeaders({ 'Content-Type' : 'application/json' })
+      .build();
+
+    this._addAccessToken(request, this.getAccessToken());
+
+    var promise = this._performRequest(HttpManager.put, request);
+
+    if (callback) {
+      promise.then(function(data) {
+        callback(null, data);
+      }, function(err) {
+        callback(err);
+      });
+    } else {
+      return promise;
+    }
+  },
+
+  /**
    * Follow a playlist.
    * @param {string} userId The playlist's owner's user ID
    * @param {string} playlistId The playlist's ID
